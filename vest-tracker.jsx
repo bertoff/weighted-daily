@@ -87,6 +87,19 @@ function buildProgram() {
 
 const PROGRAM = buildProgram();
 
+const PROGRAM_RULES = [
+  "Every set is submaximal — stop 3-4 reps short of failure, always. This program only works if you stay fresh; if you're grinding, you're doing it wrong.",
+  "If a set starts requiring real effort to finish, drop 1-2 reps rather than push through it.",
+  "Train 6 days/week with 1 fixed rest day (pick one, e.g. Sunday, and keep it consistent).",
+  "Band lateral raises only go on alternating training days (3x/week), not daily — shoulders need more recovery than the compound lifts do from GTG dosing.",
+  "Between sets: ~90s for pull-ups/squats, ~75s for push-ups, ~45s for band raises (the tracker's timer defaults match this) — but these are a starting point, not fixed law.",
+  "Reps/sets step up roughly every 2 weeks per the program table — don't freelance additional volume on top of what's scheduled.",
+  "Deload happens automatically at week 12's taper (lighter sets, fewer days) — don't skip it even if you're feeling strong.",
+  "The vest adds real daily stress to elbows, wrists, and knees that bodyweight GTG doesn't have. Ache that builds day over day — not just normal training fatigue — means take an unscheduled rest day or drop back to a lighter week's numbers.",
+  "Joint soreness always overrides the schedule. The plan is a framework, your joints are the final authority.",
+  "Week 12: 3 taper days → 2 full rest days → one all-out retest for max reps @10kg on each movement. Don't test tired, and don't test without the rest days first — that's where the real number comes from."
+];
+
 function isDayComplete(dayObj, prog) {
   if (!dayObj) return false;
   if (dayObj.type === "rest") return true;
@@ -224,7 +237,7 @@ export default function VestTracker() {
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <Dumbbell size={20} color="#8FA24C" />
           <span style={{ fontFamily: "'Oswald', sans-serif", fontSize: 18, letterSpacing: 1, textTransform: "uppercase" }}>
-            Vest Program
+            Weighted Daily
           </span>
         </div>
         <button onClick={resetAll} title="Reset all progress" style={{ background: "none", border: "none", color: "#9C978A", cursor: "pointer", display: "flex", alignItems: "center" }}>
@@ -390,6 +403,18 @@ export default function VestTracker() {
           </div>
           <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 20 }}>{streak}</div>
         </div>
+      </div>
+
+      {/* Program rules */}
+      <div style={{ marginTop: 18, background: "#1F1E17", borderRadius: 6, padding: "14px 14px 12px" }}>
+        <div style={{ fontSize: 11, color: "#9C978A", textTransform: "uppercase", letterSpacing: 1, marginBottom: 10 }}>
+          Program Rules
+        </div>
+        <ul style={{ margin: 0, paddingLeft: 18, display: "flex", flexDirection: "column", gap: 8, color: "#EDEAE0", fontSize: 12, lineHeight: 1.5 }}>
+          {PROGRAM_RULES.map((rule) => (
+            <li key={rule} style={{ color: "#EDEAE0" }}>{rule}</li>
+          ))}
+        </ul>
       </div>
     </div>
   );
