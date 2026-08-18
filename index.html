@@ -253,6 +253,8 @@
         const [retestInputs, setRetestInputs] = useState({ pull: "", push: "", squat: "" });
         const [saveError, setSaveError] = useState(false);
         const [noteInput, setNoteInput] = useState("");
+        const [timerSeconds, setTimerSeconds] = useState(90);
+        const [timerRunning, setTimerRunning] = useState(false);
 
         useEffect(() => {
           async function load() {
@@ -268,6 +270,18 @@
           }
           load();
         }, []);
+
+        useEffect(() => {
+          let interval;
+          if (timerRunning && timerSeconds > 0) {
+            interval = setInterval(() => {
+              setTimerSeconds((prev) => prev - 1);
+            }, 1000);
+          } else if (timerSeconds === 0) {
+            setTimerRunning(false);
+          }
+          return () => clearInterval(interval);
+        }, [timerRunning, timerSeconds]);
 
         async function persistProgress(next) {
           setProgressAll(next);
@@ -570,6 +584,74 @@
               "div",
               { style: { marginTop: 10, fontSize: 12, color: "#C1602E" } },
               "Couldn't save — try tapping again."
+            )
+          ),
+          React.createElement(
+            "div",
+            {
+              style: {
+                background: "#1F1E17",
+                border: "2px dashed #4A4832",
+                borderRadius: 6,
+                padding: "20px",
+                marginBottom: 18,
+                textAlign: "center",
+              },
+            },
+            React.createElement(
+              "div",
+              { style: { fontSize: 11, color: "#9C978A", textTransform: "uppercase", letterSpacing: 1, marginBottom: 12 } },
+              "Rest Timer (1:30)"
+            ),
+            React.createElement(
+              "div",
+              { style: { fontFamily: "'JetBrains Mono', monospace", fontSize: 48, fontWeight: "bold", color: timerSeconds <= 10 ? "#C1602E" : "#8FA24C", marginBottom: 12, letterSpacing: 2 } },
+              `${Math.floor(timerSeconds / 60)}:${String(timerSeconds % 60).padStart(2, "0")}`
+            ),
+            React.createElement(
+              "div",
+              { style: { display: "flex", gap: 8, justifyContent: "center" } },
+              React.createElement(
+                "button",
+                {
+                  onClick: () => setTimerRunning(!timerRunning),
+                  style: {
+                    background: timerRunning ? "#C1602E" : "#8FA24C",
+                    border: "none",
+                    borderRadius: 4,
+                    padding: "10px 20px",
+                    color: "#14140F",
+                    fontFamily: "'Oswald', sans-serif",
+                    fontSize: 13,
+                    letterSpacing: 1,
+                    textTransform: "uppercase",
+                    cursor: "pointer",
+                  },
+                },
+                timerRunning ? "Pause" : "Start"
+              ),
+              React.createElement(
+                "button",
+                {
+                  onClick: () => {
+                    setTimerSeconds(90);
+                    setTimerRunning(false);
+                  },
+                  style: {
+                    background: "none",
+                    border: "1px solid #4A4832",
+                    borderRadius: 4,
+                    padding: "10px 20px",
+                    color: "#9C978A",
+                    fontFamily: "'Oswald', sans-serif",
+                    fontSize: 13,
+                    letterSpacing: 1,
+                    textTransform: "uppercase",
+                    cursor: "pointer",
+                  },
+                },
+                "Reset"
+              )
             )
           ),
           React.createElement(
