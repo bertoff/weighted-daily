@@ -252,6 +252,7 @@
         const [loading, setLoading] = useState(true);
         const [retestInputs, setRetestInputs] = useState({ pull: "", push: "", squat: "" });
         const [saveError, setSaveError] = useState(false);
+        const [noteInput, setNoteInput] = useState("");
 
         useEffect(() => {
           async function load() {
@@ -288,8 +289,17 @@
         const dayObj = useMemo(() => PROGRAM.find((d) => d.day === currentDay), [currentDay]);
         const dayProg = progressAll[currentDay] || {};
 
+        useEffect(() => {
+          setNoteInput(dayProg.note || "");
+        }, [currentDay, dayProg.note]);
+
         function setReps(exerciseKey, repsArray) {
           const nextDay = { ...dayProg, [exerciseKey]: repsArray };
+          persistProgress({ ...progressAll, [currentDay]: nextDay });
+        }
+
+        function saveNote() {
+          const nextDay = { ...dayProg, note: noteInput };
           persistProgress({ ...progressAll, [currentDay]: nextDay });
         }
 
@@ -527,6 +537,34 @@
                   "Save Retest"
                 )
               )
+            ),
+            React.createElement(
+              "div",
+              { style: { marginTop: 16, paddingTop: 16, borderTop: "1px solid #4A4832" } },
+              React.createElement(
+                "div",
+                { style: { fontSize: 12, color: "#9C978A", textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 } },
+                "Notes"
+              ),
+              React.createElement("textarea", {
+                value: noteInput,
+                onChange: (e) => setNoteInput(e.target.value),
+                onBlur: saveNote,
+                placeholder: "Add a note for this day...",
+                style: {
+                  width: "100%",
+                  minHeight: 60,
+                  background: "#14140F",
+                  border: "1px solid #4A4832",
+                  borderRadius: 4,
+                  color: "#EDEAE0",
+                  padding: "8px 10px",
+                  fontFamily: "'JetBrains Mono', monospace",
+                  fontSize: 12,
+                  resize: "vertical",
+                  boxSizing: "border-box",
+                },
+              })
             ),
             saveError && React.createElement(
               "div",
