@@ -181,30 +181,17 @@
         const p = prog || {};
         const checks = [["pull", dayObj.pull], ["push", dayObj.push], ["squat", dayObj.squat]];
         if (dayObj.band) checks.push(["band", dayObj.band]);
-        return checks.every(([key, target]) => (p[key] || 0) >= target.sets);
+        return checks.every(([key, target]) => {
+          const sets = p[key] || [];
+          return Array.isArray(sets) && sets.length === target.sets && sets.every(r => r > 0);
+        });
       }
 
-      function TallySets({ label, target, filled, onToggle }) {
-        const circles = [];
-        for (let i = 0; i < target.sets; i++) {
-          circles.push(
-            React.createElement("button", {
-              key: i,
-              onClick: () => onToggle(i),
-              "aria-label": `${label} set ${i + 1}`,
-              style: {
-                width: 30,
-                height: 30,
-                borderRadius: "50%",
-                border: `2px solid ${i < filled ? "#8FA24C" : "#4A4832"}`,
-                background: i < filled ? "#8FA24C" : "transparent",
-                cursor: "pointer",
-                flexShrink: 0,
-              },
-            })
-          );
-        }
-
+      function RepInput({ label, target, reps, onChange }) {
+        const setReps = Array.isArray(reps) ? reps : Array(target.sets).fill(0);
+        const totalReps = setReps.reduce((sum, r) => sum + r, 0);
+        const targetTotal = target.sets * target.reps;
+        
         return React.createElement(
           "div",
           { style: { marginBottom: 14 } },
@@ -224,8 +211,37 @@
           ),
           React.createElement(
             "div",
-            { style: { display: "flex", gap: 8, flexWrap: "wrap" } },
-            circles
+            { style: { display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" } },
+            Array.from({ length: target.sets }, (_, i) =>
+              React.createElement("input", {
+                key: i,
+                type: "number",
+                min: "0",
+                value: setReps[i],
+                onChange: (e) => {
+                  const newArray = [...setReps];
+                  newArray[i] = parseInt(e.target.value, 10) || 0;
+                  onChange(newArray);
+                },
+                style: {
+                  width: 50,
+                  background: "#1F1E17",
+                  border: setReps[i] > 0 ? "2px solid #8FA24C" : "1px solid #4A4832",
+                  borderRadius: 4,
+                  color: "#EDEAE0",
+                  padding: "6px 6px",
+                  fontFamily: "'JetBrains Mono', monospace",
+                  fontSize: 14,
+                  textAlign: "center",
+                },
+                placeholder: target.reps.toString(),
+              })
+            ),
+            React.createElement(
+              "span",
+              { style: { fontFamily: "'JetBrains Mono', monospace", fontSize: 13, color: "#9C978A", marginLeft: 4 } },
+              `${totalReps} / ${targetTotal}`
+            )
           )
         );
       }
@@ -272,10 +288,8 @@
         const dayObj = useMemo(() => PROGRAM.find((d) => d.day === currentDay), [currentDay]);
         const dayProg = progressAll[currentDay] || {};
 
-        function toggleSet(exerciseKey, index) {
-          const cur = dayProg[exerciseKey] || 0;
-          const next = index < cur ? index : index + 1;
-          const nextDay = { ...dayProg, [exerciseKey]: next };
+        function setReps(exerciseKey, repsArray) {
+          const nextDay = { ...dayProg, [exerciseKey]: repsArray };
           persistProgress({ ...progressAll, [currentDay]: nextDay });
         }
 
@@ -433,18 +447,18 @@
             dayObj?.type === "train" && React.createElement(
               React.Fragment,
               null,
-              React.createElement(TallySets, { label: "Pull-ups", target: dayObj.pull, filled: dayProg.pull || 0, onToggle: (i) => toggleSet("pull", i) }),
-              React.createElement(TallySets, { label: "Push-ups", target: dayObj.push, filled: dayProg.push || 0, onToggle: (i) => toggleSet("push", i) }),
-              React.createElement(TallySets, { label: "Squats", target: dayObj.squat, filled: dayProg.squat || 0, onToggle: (i) => toggleSet("squat", i) }),
-              dayObj.band && React.createElement(TallySets, { label: "Band lat raises", target: dayObj.band, filled: dayProg.band || 0, onToggle: (i) => toggleSet("band", i) })
+              React.createElement(RepInput, { label: "Pull-ups", target: dayObj.pull, reps: dayProg.pull, onChange: (r) => setReps("pull", r) }),
+              React.createElement(RepInput, { label: "Push-ups", target: dayObj.push, reps: dayProg.push, onChange: (r) => setReps("push", r) }),
+              React.createElement(RepInput, { label: "Squats", target: dayObj.squat, reps: dayProg.squat, onChange: (r) => setReps("squat", r) }),
+              dayObj.band && React.createElement(RepInput, { label: "Band lat raises", target: dayObj.band, reps: dayProg.band, onChange: (r) => setReps("band", r) })
             ),
             dayObj?.type === "taper" && React.createElement(
               React.Fragment,
               null,
               React.createElement("div", { style: { fontSize: 12, color: "#C1602E", marginBottom: 12, fontFamily: "'JetBrains Mono', monospace" } }, "TAPER — LIGHT EFFORT"),
-              React.createElement(TallySets, { label: "Pull-ups", target: dayObj.pull, filled: dayProg.pull || 0, onToggle: (i) => toggleSet("pull", i) }),
-              React.createElement(TallySets, { label: "Push-ups", target: dayObj.push, filled: dayProg.push || 0, onToggle: (i) => toggleSet("push", i) }),
-              React.createElement(TallySets, { label: "Squats", target: dayObj.squat, filled: dayProg.squat || 0, onToggle: (i) => toggleSet("squat", i) })
+              React.createElement(RepInput, { label: "Pull-ups", target: dayObj.pull, reps: dayProg.pull, onChange: (r) => setReps("pull", r) }),
+              React.createElement(RepInput, { label: "Push-ups", target: dayObj.push, reps: dayProg.push, onChange: (r) => setReps("push", r) }),
+              React.createElement(RepInput, { label: "Squats", target: dayObj.squat, reps: dayProg.squat, onChange: (r) => setReps("squat", r) })
             ),
             dayObj?.type === "retest" && React.createElement(
               "div",
